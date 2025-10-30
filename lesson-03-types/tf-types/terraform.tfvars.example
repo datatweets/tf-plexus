@@ -1,0 +1,64 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and fill in your values
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+
+# String variables
+instance_name = "types-demo-server"
+zone          = "us-west1-a"
+environment   = "dev" # or "prod"
+
+# Number variables
+disk_size      = 20
+instance_count = 1
+
+# Bool variables
+assign_external_ip    = true
+enable_monitoring     = false
+enable_ip_forwarding  = false
+create_typed_server   = true
+
+# List variables
+allowed_ports      = [80, 443, 8080]
+availability_zones = ["us-west1-a", "us-west1-b", "us-west1-c"]
+allowed_cidrs      = ["0.0.0.0/0"]
+
+# Map variables
+disk_configs = {
+  small-disk = {
+    type = "pd-standard"
+    size = 10
+  }
+  medium-disk = {
+    type = "pd-balanced"
+    size = 50
+  }
+  large-disk = {
+    type = "pd-ssd"
+    size = 100
+  }
+}
+
+machine_types = {
+  dev  = "e2-micro"
+  prod = "e2-standard-4"
+}
+
+# Object variables
+typed_config = {
+  name     = "production-server"
+  location = "US"
+  regions  = ["us-west1", "us-east1"]
+}
+
+# Nested map variables
+regional_zones = {
+  americas = ["us-west1", "us-west2", "us-central1"]
+  europe   = ["europe-west1", "europe-west2", "europe-north1"]
+  apac     = ["asia-south1", "asia-southeast1", "asia-east1"]
+}
+
+region_group = "americas" # or "europe" or "apac"

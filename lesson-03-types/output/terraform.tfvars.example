@@ -1,0 +1,34 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and fill in your values
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+
+server_name  = "output-demo"
+region       = "us-west1"
+zones        = ["us-west1-a", "us-west1-b", "us-west1-c"]
+server_count = 3
+machine_type = "e2-micro"
+environment  = "demo"
+create_lb    = true
+
+# Database configurations
+db_configs = {
+  "db-primary" = {
+    machine_type = "e2-medium"
+    zone         = "us-west1-a"
+    disk_size    = 100
+    db_type      = "postgresql"
+  }
+  "db-replica" = {
+    machine_type = "e2-medium"
+    zone         = "us-west1-b"
+    disk_size    = 100
+    db_type      = "postgresql"
+  }
+}
+
+# Sensitive value (for demonstration)
+sensitive_api_key = "demo-api-key-12345"

@@ -1,0 +1,30 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and fill in your values
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+
+instance_name = "conditional-demo"
+environment   = "dev" # or "prod" - try both!
+zone          = "us-west1-a"
+region        = "us-west1"
+
+# Machine types (conditional based on environment)
+dev_machine_type  = "e2-micro"
+prod_machine_type = "e2-standard-4"
+
+# IP configuration
+assign_external_ip = true  # Set to false for no external IP
+assign_static_ip   = false # Set to true for static IP
+
+# Features
+enable_startup_script = true
+allow_http_traffic    = true
+enable_backups        = false
+
+# Production-specific
+replica_count      = 2
+prod_allowed_ips   = ["10.0.0.0/8"]
+backup_disk_size   = 50

@@ -1,0 +1,49 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and fill in your values
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+
+instance_name    = "dynamic-block-demo"
+machine_type     = "e2-medium"
+zone             = "us-west1-a"
+boot_image       = "debian-cloud/debian-11"
+boot_disk_size   = 20
+create_multi_nic = false
+
+# Disk configurations - customize as needed
+disks = {
+  data-disk-1 = {
+    type = "pd-standard"
+    size = 10
+    mode = "READ_WRITE"
+  }
+  data-disk-2 = {
+    type = "pd-balanced"
+    size = 50
+    mode = "READ_WRITE"
+  }
+  data-disk-3 = {
+    type = "pd-ssd"
+    size = 100
+    mode = "READ_ONLY"
+  }
+}
+
+# Firewall rules - customize ports as needed
+firewall_rules = [
+  {
+    protocol = "tcp"
+    port     = 80
+  },
+  {
+    protocol = "tcp"
+    port     = 443
+  },
+  {
+    protocol = "tcp"
+    port     = 8080
+  }
+]

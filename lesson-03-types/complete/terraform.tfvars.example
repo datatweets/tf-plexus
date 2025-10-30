@@ -1,0 +1,45 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and customize for your deployment
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Project Configuration
+project_name = "prod-app"
+region       = "us-west1"
+environment  = "production"  # or "dev"
+
+# Network Configuration
+# Uses defaults from variables.tf, customize if needed
+# subnet_configs = { ... }
+
+# Web Tier
+web_server_count        = 3
+production_machine_type = "e2-medium"
+dev_machine_type        = "e2-micro"
+enable_external_ips     = true
+use_static_ips          = true
+attach_data_disks       = true
+data_disk_size_gb       = 100
+
+# Application Tier
+# Uses defaults from variables.tf, customize if needed
+# app_server_configs = { ... }
+
+# Database Tier
+# Uses defaults from variables.tf, customize if needed
+# db_configs = { ... }
+
+# Optional Components
+create_load_balancer = true
+enable_monitoring    = true
+
+# Labels
+common_labels = {
+  managed_by = "terraform"
+  project    = "prod-app"
+  team       = "platform"
+}
+
+# Service Account (optional)
+# service_account_email = "terraform-sa@your-project.iam.gserviceaccount.com"
