@@ -1,0 +1,7 @@
+project_id     = "YOUR-GCP-PROJECT-ID"
+environment    = "dev"
+region         = "us-central1"
+subnet_cidr    = "10.0.1.0/24"
+instance_count = 1
+machine_type   = "e2-micro"
+disk_size_gb   = 10

@@ -1,0 +1,32 @@
+# Terraform files
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/.terraform.tfstate.lock.info
+**/tfplan
+**/tfplan.json
+**/terraform.tfvars
+**/.terraformrc
+**/terraform.rc
+
+# Credentials
+**/*.json
+**/credentials/
+**/*.pem
+**/*.key
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.zip
+*.tar.gz

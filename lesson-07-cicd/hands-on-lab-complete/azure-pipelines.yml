@@ -1,0 +1,287 @@
+# Multi-Environment Terraform Pipeline
+# Deploys to Dev, Staging, and Production with approval gates
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - terraform/**
+      - azure-pipelines.yml
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: terraform-variables
+  - name: gcpServiceAccountFile
+    value: 'terraform-pipeline-key.json'
+
+stages:
+  #############################################################################
+  # STAGE 1: Validate All Environments
+  #############################################################################
+  - stage: Validate
+    displayName: 'Validate Terraform'
+    jobs:
+      - job: ValidateAll
+        displayName: 'Validate All Environments'
+        steps:
+          # Install Terraform
+          - script: |
+              wget -O terraform.zip https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+              unzip terraform.zip
+              sudo mv terraform /usr/local/bin/
+              terraform version
+            displayName: 'Install Terraform $(TF_VERSION)'
+
+          # Download GCP Credentials
+          - task: DownloadSecureFile@1
+            name: gcpKey
+            displayName: 'Download GCP Service Account Key'
+            inputs:
+              secureFile: '$(gcpServiceAccountFile)'
+
+          # Validate Module
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd terraform/modules/compute
+              terraform init -backend=false
+              terraform validate
+              echo "✅ Module validated successfully"
+            displayName: 'Validate Compute Module'
+
+          # Validate Dev
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd terraform/environments/dev
+              terraform init -backend=false
+              terraform validate
+              echo "✅ Dev environment validated"
+            displayName: 'Validate Dev Environment'
+
+          # Validate Staging
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd terraform/environments/staging
+              terraform init -backend=false
+              terraform validate
+              echo "✅ Staging environment validated"
+            displayName: 'Validate Staging Environment'
+
+          # Validate Prod
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd terraform/environments/prod
+              terraform init -backend=false
+              terraform validate
+              echo "✅ Production environment validated"
+            displayName: 'Validate Production Environment'
+
+  #############################################################################
+  # STAGE 2: Deploy to Development
+  #############################################################################
+  - stage: Dev
+    displayName: 'Deploy to Dev'
+    dependsOn: Validate
+    condition: succeeded()
+    jobs:
+      - deployment: DeployDev
+        displayName: 'Deploy Dev Environment'
+        environment: 'terraform-dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                # Install Terraform
+                - script: |
+                    wget -O terraform.zip https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+                    unzip terraform.zip
+                    sudo mv terraform /usr/local/bin/
+                    terraform version
+                  displayName: 'Install Terraform'
+
+                # Download GCP Credentials
+                - task: DownloadSecureFile@1
+                  name: gcpKey
+                  displayName: 'Download GCP Key'
+                  inputs:
+                    secureFile: '$(gcpServiceAccountFile)'
+
+                # Terraform Init, Plan, and Apply
+                - script: |
+                    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+                    cd terraform/environments/dev
+
+                    echo "Initializing Terraform..."
+                    terraform init
+
+                    echo "Creating plan..."
+                    terraform plan \
+                      -var="project_id=$(GCP_PROJECT_ID)" \
+                      -var="region=$(GCP_REGION)" \
+                      -out=tfplan
+
+                    echo "Applying plan..."
+                    terraform apply -auto-approve tfplan
+
+                    echo "✅ Dev deployment complete"
+                  displayName: 'Terraform Deploy Dev'
+
+                # Save Outputs
+                - script: |
+                    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+                    cd terraform/environments/dev
+                    terraform output -json > $(Build.ArtifactStagingDirectory)/dev-outputs.json
+                    cat $(Build.ArtifactStagingDirectory)/dev-outputs.json
+                  displayName: 'Save Dev Outputs'
+
+                # Publish Outputs
+                - task: PublishPipelineArtifact@1
+                  displayName: 'Publish Dev Outputs'
+                  inputs:
+                    targetPath: '$(Build.ArtifactStagingDirectory)'
+                    artifact: 'dev-outputs'
+
+  #############################################################################
+  # STAGE 3: Deploy to Staging
+  #############################################################################
+  - stage: Staging
+    displayName: 'Deploy to Staging'
+    dependsOn: Dev
+    condition: succeeded()
+    jobs:
+      - deployment: DeployStaging
+        displayName: 'Deploy Staging Environment'
+        environment: 'terraform-staging'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                # Install Terraform
+                - script: |
+                    wget -O terraform.zip https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+                    unzip terraform.zip
+                    sudo mv terraform /usr/local/bin/
+                  displayName: 'Install Terraform'
+
+                # Download GCP Credentials
+                - task: DownloadSecureFile@1
+                  name: gcpKey
+                  displayName: 'Download GCP Key'
+                  inputs:
+                    secureFile: '$(gcpServiceAccountFile)'
+
+                # Terraform Deploy
+                - script: |
+                    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+                    cd terraform/environments/staging
+
+                    terraform init
+                    terraform plan \
+                      -var="project_id=$(GCP_PROJECT_ID)" \
+                      -var="region=$(GCP_REGION)" \
+                      -out=tfplan
+
+                    terraform apply -auto-approve tfplan
+                    echo "✅ Staging deployment complete"
+                  displayName: 'Terraform Deploy Staging'
+
+                # Save Outputs
+                - script: |
+                    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+                    cd terraform/environments/staging
+                    terraform output -json > $(Build.ArtifactStagingDirectory)/staging-outputs.json
+                  displayName: 'Save Staging Outputs'
+
+                # Publish Outputs
+                - task: PublishPipelineArtifact@1
+                  displayName: 'Publish Staging Outputs'
+                  inputs:
+                    targetPath: '$(Build.ArtifactStagingDirectory)'
+                    artifact: 'staging-outputs'
+
+  #############################################################################
+  # STAGE 4: Deploy to Production (Manual Approval Required)
+  #############################################################################
+  - stage: Production
+    displayName: 'Deploy to Production'
+    dependsOn: Staging
+    condition: succeeded()
+    jobs:
+      - deployment: DeployProduction
+        displayName: 'Deploy Production Environment'
+        environment: 'terraform-prod'  # This triggers manual approval
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                # Install Terraform
+                - script: |
+                    wget -O terraform.zip https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+                    unzip terraform.zip
+                    sudo mv terraform /usr/local/bin/
+                  displayName: 'Install Terraform'
+
+                # Download GCP Credentials
+                - task: DownloadSecureFile@1
+                  name: gcpKey
+                  displayName: 'Download GCP Key'
+                  inputs:
+                    secureFile: '$(gcpServiceAccountFile)'
+
+                # Terraform Deploy
+                - script: |
+                    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+                    cd terraform/environments/prod
+
+                    terraform init
+                    terraform plan \
+                      -var="project_id=$(GCP_PROJECT_ID)" \
+                      -var="region=$(GCP_REGION)" \
+                      -out=tfplan
+
+                    terraform apply -auto-approve tfplan
+                    echo "✅ Production deployment complete"
+                  displayName: 'Terraform Deploy Production'
+
+                # Save Outputs
+                - script: |
+                    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+                    cd terraform/environments/prod
+                    terraform output -json > $(Build.ArtifactStagingDirectory)/prod-outputs.json
+                  displayName: 'Save Production Outputs'
+
+                # Publish Outputs
+                - task: PublishPipelineArtifact@1
+                  displayName: 'Publish Production Outputs'
+                  inputs:
+                    targetPath: '$(Build.ArtifactStagingDirectory)'
+                    artifact: 'prod-outputs'
+
+                # Deployment Summary
+                - script: |
+                    echo "========================================"
+                    echo "🎉 PRODUCTION DEPLOYMENT SUCCESSFUL 🎉"
+                    echo "========================================"
+                    echo ""
+                    echo "Environment: Production"
+                    echo "Project: $(GCP_PROJECT_ID)"
+                    echo "Region: $(GCP_REGION)"
+                    echo ""
+                    echo "Resources deployed:"
+                    echo "  - 1 VPC network"
+                    echo "  - 1 Subnet"
+                    echo "  - 3 VM instances (e2-medium)"
+                    echo "  - Firewall rules"
+                    echo ""
+                    echo "Check outputs above for resource details"
+                    echo "========================================"
+                  displayName: 'Deployment Summary'

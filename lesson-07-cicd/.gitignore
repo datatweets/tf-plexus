@@ -1,0 +1,45 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform.lock.hcl
+tfplan
+tfplan.*
+
+# Credentials (CRITICAL - NEVER COMMIT!)
+*.json
+**/*-key.json
+**/*-credentials.json
+.gcp-keys/
+terraform-ci-key.json
+service-account-*.json
+
+# Variable files (may contain secrets)
+*.tfvars
+!terraform.tfvars.example
+*.tfvars.json
+
+# Azure DevOps
+.azure-pipelines/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.tmp
+.complete_tutorial.md

@@ -1,0 +1,7 @@
+project_id     = "YOUR-GCP-PROJECT-ID"
+environment    = "staging"
+region         = "us-central1"
+subnet_cidr    = "10.1.1.0/24"
+instance_count = 2
+machine_type   = "e2-small"
+disk_size_gb   = 20
