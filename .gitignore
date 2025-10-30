@@ -1,0 +1,200 @@
+# ============================================================================
+# Terraform Project - Root .gitignore
+# ============================================================================
+# This file provides repository-wide protection against accidentally 
+# committing sensitive Terraform files across all lessons and subfolders.
+
+# ============================================================================
+# Terraform State Files (CRITICAL - Contains Infrastructure Secrets)
+# ============================================================================
+# Never commit state files - they contain sensitive data like passwords,
+# IP addresses, resource IDs, and other infrastructure details
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfstate.backup
+**/*.tfstate.lock.info
+
+# ============================================================================
+# Terraform Variable Files (CRITICAL - Contains Secrets)
+# ============================================================================
+# Never commit .tfvars files - they often contain:
+# - API keys and tokens
+# - Passwords and credentials
+# - Project IDs
+# - Sensitive configuration
+**/*.tfvars
+**/*.tfvars.json
+**/terraform.tfvars
+
+# Exception: Allow example/template files
+!**/*.tfvars.example
+!**/terraform.tfvars.example
+
+# ============================================================================
+# Terraform Provider and Module Cache
+# ============================================================================
+# The .terraform directory contains downloaded providers and modules
+# These should be downloaded fresh by each user via 'terraform init'
+**/.terraform/
+**/.terraform/*
+
+# Dependency lock file (optional - team decides)
+# Uncomment to ignore lock files:
+# **/.terraform.lock.hcl
+
+# ============================================================================
+# Terraform Crash and Log Files
+# ============================================================================
+**/crash.log
+**/crash.*.log
+**/*.log
+
+# ============================================================================
+# Sensitive Documentation Files
+# ============================================================================
+# Files containing authentication details or sensitive information
+lesson-01-basics/gcp-auth-terraform.md
+
+# ============================================================================
+# Project Solutions - Master Versions
+# ============================================================================
+# Keep master/solution versions private to encourage student learning
+project-01-webapp/master-version/
+project-01-webapp/PROJECT_SUMMARY.md
+project-01-webapp/QUICKSTART.md
+
+# ============================================================================
+# Completion Summaries (Internal Use)
+# ============================================================================
+lesson-05-workspaces/COMPLETION_SUMMARY.md
+
+# ============================================================================
+# Terraform Override Files
+# ============================================================================
+# Override files are used for local development overrides
+# and should not be shared
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+
+# ============================================================================
+# Terraform CLI Configuration Files
+# ============================================================================
+# These contain user-specific CLI settings
+**/.terraformrc
+**/terraform.rc
+
+# ============================================================================
+# Cloud Provider Credentials (CRITICAL)
+# ============================================================================
+# Never commit authentication files
+**/*credentials*.json
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/service-account*.json
+**/*-key.json
+**/.gcloud/
+**/.aws/
+**/.azure/
+
+# ============================================================================
+# SSH Keys
+# ============================================================================
+**/id_rsa
+**/id_rsa.pub
+**/id_dsa
+**/id_dsa.pub
+**/id_ecdsa
+**/id_ecdsa.pub
+**/id_ed25519
+**/id_ed25519.pub
+**/*.ppk
+
+# ============================================================================
+# Environment Files
+# ============================================================================
+**/.env
+**/.env.*
+!**/.env.example
+
+# ============================================================================
+# Operating System Files
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ============================================================================
+# IDE and Editor Files
+# ============================================================================
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+\#*\#
+.#*
+
+# ============================================================================
+# Backup Files
+# ============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============================================================================
+# Terraform Plan Files
+# ============================================================================
+# Plan files may contain sensitive data
+**/*.tfplan
+**/tfplan
+
+# ============================================================================
+# Documentation and Reports (if generated)
+# ============================================================================
+# Uncomment if you generate these and don't want to commit them
+# **/TOPIC_REPETITION_REPORT.md
+# **/DEDUPLICATION_CHANGES.md
+*.json
+.gcp-keys/
+**/*-key.json
