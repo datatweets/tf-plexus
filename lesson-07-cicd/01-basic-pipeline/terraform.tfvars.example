@@ -1,0 +1,11 @@
+# Terraform Variables for CI/CD Pipeline
+# These values will be set by Azure DevOps pipeline
+
+# Required: Set via pipeline variable or terraform.tfvars
+project_id = "YOUR_GCP_PROJECT_ID"  # Replace with your project ID
+
+# Optional: Override defaults if needed
+# region       = "us-central1"
+# zone         = "us-central1-a"
+# environment  = "dev"
+# machine_type = "e2-micro"

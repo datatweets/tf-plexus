@@ -1,0 +1,23 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Credentials (CRITICAL!)
+*.json
+**/*-key.json
+.gcp-keys/
+terraform-ci-key.json
+
+# Variable files (may contain secrets)
+*.tfvars
+*.tfvars.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

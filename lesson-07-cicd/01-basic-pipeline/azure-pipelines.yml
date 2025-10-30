@@ -1,0 +1,189 @@
+# Azure DevOps Pipeline - Multi-Stage Terraform CI/CD
+# Real-world pipeline with separate stages for Build, Test, Plan, and Deploy
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - '/*.tf'
+      - '/azure-pipelines.yml'
+
+pr: none
+
+variables:
+  - group: terraform-variables
+  - name: working_directory
+    value: '$(System.DefaultWorkingDirectory)'
+
+# ============================================================================
+# STAGE 1: VALIDATE & TEST
+# ============================================================================
+stages:
+  - stage: Validate
+    displayName: '✅ Validate & Test'
+    jobs:
+      - job: CodeQuality
+        displayName: 'Code Quality Checks'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo "Installing Terraform $(TF_VERSION)..."
+              wget -q https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+              unzip -q terraform_$(TF_VERSION)_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
+            displayName: 'Install Terraform'
+          
+          - task: DownloadSecureFile@1
+            name: gcpKey
+            displayName: 'Download GCP Credentials'
+            inputs:
+              secureFile: 'terraform-ci-key.json'
+          
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd $(working_directory)
+              
+              terraform init -backend=false
+              terraform validate
+            displayName: 'Syntax Validation'
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: $(gcpKey.secureFilePath)
+
+# ============================================================================
+# STAGE 2: PLAN
+# ============================================================================
+  - stage: Plan
+    displayName: '📋 Terraform Plan'
+    dependsOn: Validate
+    jobs:
+      - job: TerraformPlan
+        displayName: 'Create Execution Plan'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo "Installing Terraform $(TF_VERSION)..."
+              wget -q https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+              unzip -q terraform_$(TF_VERSION)_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
+            displayName: 'Install Terraform'
+          
+          - task: DownloadSecureFile@1
+            name: gcpKey
+            displayName: 'Download GCP Credentials'
+            inputs:
+              secureFile: 'terraform-ci-key.json'
+          
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd $(working_directory)
+              
+              terraform init \
+                -backend-config="bucket=$(TF_STATE_BUCKET)" \
+                -backend-config="prefix=examples/01-basic-pipeline"
+            displayName: 'Terraform Init'
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: $(gcpKey.secureFilePath)
+          
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd $(working_directory)
+              
+              echo "Creating execution plan..."
+              terraform plan \
+                -var="project_id=$(GCP_PROJECT_ID)" \
+                -var="region=$(GCP_REGION)" \
+                -out=tfplan \
+                -detailed-exitcode
+              
+              PLAN_EXIT_CODE=$?
+              if [ $PLAN_EXIT_CODE -eq 0 ]; then
+                echo "✓ No infrastructure changes"
+              elif [ $PLAN_EXIT_CODE -eq 2 ]; then
+                echo "✓ Changes detected - review required"
+              else
+                echo "✗ Plan failed"
+                exit 1
+              fi
+            displayName: 'Generate Plan'
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: $(gcpKey.secureFilePath)
+          
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd $(working_directory)
+              
+              echo "=========================================="
+              echo "TERRAFORM PLAN SUMMARY"
+              echo "=========================================="
+              terraform show tfplan
+            displayName: 'Display Plan'
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: $(gcpKey.secureFilePath)
+          
+          - publish: $(working_directory)/tfplan
+            artifact: terraform-plan
+            displayName: 'Publish Plan Artifact'
+
+# ============================================================================
+# STAGE 3: DEPLOY (Manual Approval Required)
+# ============================================================================
+  - stage: Deploy
+    displayName: '🚀 Deploy Infrastructure'
+    dependsOn: Plan
+    condition: succeeded()
+    jobs:
+      - job: ApplyInfrastructure
+        displayName: 'Apply Terraform Changes'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+          
+          - script: |
+              echo "Installing Terraform $(TF_VERSION)..."
+              wget -q https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+              unzip -q terraform_$(TF_VERSION)_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
+            displayName: 'Install Terraform'
+          
+          - task: DownloadSecureFile@1
+            name: gcpKey
+            displayName: 'Download GCP Credentials'
+            inputs:
+              secureFile: 'terraform-ci-key.json'
+          
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd $(working_directory)
+              
+              terraform init \
+                -backend-config="bucket=$(TF_STATE_BUCKET)" \
+                -backend-config="prefix=examples/01-basic-pipeline"
+            displayName: 'Terraform Init'
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: $(gcpKey.secureFilePath)
+          
+          - download: current
+            artifact: terraform-plan
+            displayName: 'Download Plan'
+          
+          - script: |
+              export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+              cd $(working_directory)
+              
+              echo "Applying Terraform changes..."
+              echo "⚠️  THIS WILL CREATE REAL RESOURCES ⚠️"
+              
+              # Uncomment to actually apply:
+              # cp $(Pipeline.Workspace)/terraform-plan/tfplan .
+              # terraform apply -auto-approve tfplan
+              
+              echo "Apply step is commented out for safety"
+              echo "Uncomment the terraform apply command to deploy"
+            displayName: 'Terraform Apply (Disabled)'
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: $(gcpKey.secureFilePath)
