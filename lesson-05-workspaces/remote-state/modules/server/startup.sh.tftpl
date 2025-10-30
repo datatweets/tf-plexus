@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+# Update package list
+apt-get update
+
+# Install nginx
+apt-get install -y nginx
+
+# Create custom index page
+cat > /var/www/html/index.html <<EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${name}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .info { background: #f0f0f0; padding: 20px; border-radius: 5px; }
+        .tier { color: #0066cc; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Server: ${name}</h1>
+    <div class="info">
+        <p><strong>Environment:</strong> ${environment}</p>
+        <p><strong>Tier:</strong> <span class="tier">${tier}</span></p>
+        <p><strong>Hostname:</strong> $(hostname)</p>
+        <p><strong>IP Address:</strong> $(hostname -I)</p>
+    </div>
+</body>
+</html>
+EOF
+
+# Restart nginx
+systemctl restart nginx
+systemctl enable nginx
+
+echo "Server ${name} configured successfully"

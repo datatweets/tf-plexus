@@ -1,0 +1,4 @@
+project_id   = "your-prod-project-id"
+project_name = "multi-env"
+region       = "us-west1"
+zone         = "us-west1-a"

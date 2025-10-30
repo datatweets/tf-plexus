@@ -1,0 +1,4 @@
+# Default configuration (dev environment)
+project_id = "your-dev-project-id"
+region     = "us-west1"
+zone       = "us-west1-a"

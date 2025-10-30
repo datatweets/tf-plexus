@@ -1,0 +1,4 @@
+# Staging configuration
+project_id = "your-staging-project-id"
+region     = "us-west1"
+zone       = "us-west1-a"
