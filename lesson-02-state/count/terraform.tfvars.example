@@ -1,0 +1,11 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and replace with your actual project ID
+
+# Replace with your actual GCP project ID
+project_id = "your-project-id-here"
+
+# Optional: Customize server count (default is 3)
+# server_count = 5
+
+# Optional: Customize zones (default is us-central1-a, us-central1-b, us-central1-c)
+# zones = ["us-west1-a", "us-west1-b", "us-west1-c"]

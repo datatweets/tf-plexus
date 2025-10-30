@@ -1,0 +1,17 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and customize
+
+# Replace with your actual GCP project ID
+project_id = "your-project-id-here"
+
+# Optional: Customize regions
+# regions = {
+#   "london" = {
+#     zone          = "europe-west2-a"
+#     ip_cidr_range = "192.168.10.0/24"
+#   }
+#   "tokyo" = {
+#     zone          = "asia-northeast1-a"
+#     ip_cidr_range = "192.168.20.0/24"
+#   }
+# }
