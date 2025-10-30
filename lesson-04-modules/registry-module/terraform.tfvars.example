@@ -1,0 +1,10 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and fill in your values
+
+# Required: Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+project_name = "registry-demo"
+region       = "us-west1"
+zone         = "us-west1-a"

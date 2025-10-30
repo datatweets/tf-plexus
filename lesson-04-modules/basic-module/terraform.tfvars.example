@@ -1,0 +1,9 @@
+# terraform.tfvars.example
+# Copy this to terraform.tfvars and fill in your values
+
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+server_name  = "demo-server"
+zone         = "us-central1-c"
+machine_type = "e2-micro"

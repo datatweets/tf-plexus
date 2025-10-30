@@ -1,0 +1,18 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and fill in your values
+
+# Required
+project_id = "your-gcp-project-id"
+
+# Project configuration
+project_name = "multi-tier-app"
+region       = "us-west1"
+zone         = "us-west1-a"
+environment  = "dev"  # or "production"
+
+# Instance counts
+web_instance_count = 2
+app_instance_count = 2
+
+# Optional features
+enable_monitoring = true
