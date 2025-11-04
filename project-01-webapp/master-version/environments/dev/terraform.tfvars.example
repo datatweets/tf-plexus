@@ -1,0 +1,17 @@
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to version control!
+
+project_id = "your-gcp-project-id"
+region     = "us-west1"
+zone       = "us-west1-a"
+
+# Optional: Customize these values
+# web_server_count = 2
+# machine_type     = "e2-micro"
+# database_tier    = "db-f1-micro"
+
+# Feature flags
+# enable_load_balancer    = true
+# enable_database         = true
+# enable_storage          = true
+# enable_database_backups = false

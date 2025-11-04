@@ -1,0 +1,89 @@
+# Production Environment - Variable Values Template
+# Copy this file to terraform.tfvars and customize with your values
+# WARNING: DO NOT commit terraform.tfvars to version control!
+
+# ════════════════════════════════════════════════════════════
+# REQUIRED CONFIGURATION
+# ════════════════════════════════════════════════════════════
+
+# Your GCP Project ID (REQUIRED)
+project_id = "your-production-project-id"
+
+# ════════════════════════════════════════════════════════════
+# PRODUCTION WARNINGS
+# ════════════════════════════════════════════════════════════
+# 
+# ⚠️  This configuration deploys PRODUCTION infrastructure:
+#    - 3x e2-medium instances (~$0.134/hour total)
+#    - db-g1-small database (~$0.096/hour)
+#    - Cloud Storage with long-term retention
+#    - Deletion protection is ENABLED
+# 
+# 💰 Estimated Cost: ~$5.52/day (~$165/month)
+# 
+# 🔒 Safety Features:
+#    - Database deletion_protection is enabled
+#    - Storage buckets have force_destroy = false
+#    - Long retention periods (365 days for assets)
+# 
+# 📝 Before Deploying:
+#    1. Review all costs in GCP Pricing Calculator
+#    2. Confirm budget with stakeholders
+#    3. Set up billing alerts in GCP Console
+#    4. Document this deployment for compliance
+#    5. Plan rollback strategy
+# 
+# ════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════
+# OPTIONAL CUSTOMIZATION
+# ════════════════════════════════════════════════════════════
+
+# Region and Zone
+# region = "us-central1"
+# zone   = "us-central1-a"
+
+# VPC Configuration
+# vpc_name = "plexus-prod-vpc"
+
+# Compute Configuration
+# web_server_count = 3        # Number of web servers (production default)
+# machine_type     = "e2-medium"  # Larger instances for production
+
+# Database Configuration
+# database_tier            = "db-g1-small"  # Production-grade database
+# enable_database_backups  = true           # Always enable in production
+# database_backup_hour     = 3              # 3 AM backup time
+
+# Feature Flags
+# enable_load_balancer = true  # Required for high availability
+# enable_database      = true  # Required for stateful apps
+# enable_storage       = true  # Required for file storage
+
+# ════════════════════════════════════════════════════════════
+# ADVANCED CONFIGURATION (Usually not changed)
+# ════════════════════════════════════════════════════════════
+
+# database_version           = "POSTGRES_15"
+# database_disk_size        = 20
+# database_password         = "ChangeThisSecurePassword123!"  # ⚠️ Use Secret Manager instead!
+# storage_location          = "US"
+# storage_class             = "STANDARD"
+
+# ════════════════════════════════════════════════════════════
+# PRODUCTION CHECKLIST
+# ════════════════════════════════════════════════════════════
+# 
+# Before running terraform apply:
+# [ ] Verified project_id is correct
+# [ ] Reviewed all costs and got approval
+# [ ] Set up billing alerts
+# [ ] Reviewed firewall rules in main.tf
+# [ ] Changed database password (use Secret Manager)
+# [ ] Documented deployment for team
+# [ ] Scheduled maintenance window
+# [ ] Prepared rollback plan
+# [ ] Notified stakeholders
+# [ ] Enabled audit logging
+# 
+# ════════════════════════════════════════════════════════════
